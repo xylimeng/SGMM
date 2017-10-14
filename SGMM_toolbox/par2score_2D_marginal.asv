@@ -1,0 +1,37 @@
+function [contrast_score] = par2score_2D_marginal(obs, mu, sigma, posterior,type)
+
+mu = par.mu;
+sigma = par.sigma;
+posterior = weight_rb;
+type = 'soft';
+
+K = size(posterior, 2); 
+d = size(obs, 2); % univariate or bivariate or higher dimension 
+
+if strcmp(type, 'hard') 
+    [~, labels] = max(posterior,[], 2);
+    posterior = zeros(size(posterior)); 
+    for j = 1:K
+        posterior((labels == j), j) = 1; 
+    end 
+end 
+
+
+bk.mean = posterior * mu'; 
+bk.center = obs - bk.mean; 
+
+% re-scaled using sigma 
+temp_scores = zeros([size(obs), K]); 
+for j = 1:K 
+    this_sigma = sigma(:,:,j); 
+    root_sigma = sqrtm(inv(this_sigma)); 
+    temp_scores(:,:,j) = bk.center * root_sigma; 
+end 
+
+scores = zeros(size(obs)); 
+for j = 1:K
+    scores = temp_scores(:, :, j) .* repmat(posterior(:,j), [1, d]) + scores;
+end
+ 
+
+end 
